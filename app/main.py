@@ -3,14 +3,22 @@ from __future__ import annotations
 import asyncio
 
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 
-from app.schemas import JokeResponse, JokesListResponse, KeywordRequest
+from app.schemas import JokesListResponse, KeywordRequest
 from app.services import fetch_jokes_by_keyword, fetch_random_jokes
 
 app = FastAPI(
     title="Joke Generator API",
     description="Get random jokes or search jokes by keyword (sync and async).",
     version="1.0.0",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 

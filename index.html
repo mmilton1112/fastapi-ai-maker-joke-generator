@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Joke Generator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f6fb;
+      color: #1f2937;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 2rem;
+    }
+
+    .subtitle {
+      margin: 0 0 24px;
+      color: #6b7280;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+
+    .card h2 {
+      margin: 0 0 12px;
+      font-size: 1.1rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 1rem;
+      margin-bottom: 12px;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      background: #2563eb;
+      color: #ffffff;
+    }
+
+    button.secondary {
+      background: #4b5563;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .status {
+      margin-top: 16px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 0.9rem;
+    }
+
+    .status.error {
+      background: #fef2f2;
+      color: #b91c1c;
+    }
+
+    .results {
+      margin-top: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .joke {
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 14px;
+      background: #fafafa;
+    }
+
+    .joke-meta {
+      font-size: 0.85rem;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+
+    .joke-text {
+      font-size: 1.05rem;
+    }
+
+    .endpoint {
+      font-size: 0.85rem;
+      color: #6b7280;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Joke Generator</h1>
+    <p class="subtitle">Talk to your FastAPI server on Railway</p>
+
+    <div class="card">
+      <h2>Random Joke</h2>
+      <label for="randomCount">Number of jokes</label>
+      <input id="randomCount" type="number" min="1" max="10" value="1" />
+      <div class="row">
+        <button id="randomSyncBtn">Get Random (Sync)</button>
+        <button id="randomAsyncBtn" class="secondary">Get Random (Async)</button>
+      </div>
+      <div id="randomEndpoint" class="endpoint"></div>
+    </div>
+
+    <div class="card">
+      <h2>Search by Keyword</h2>
+      <label for="keyword">Keyword</label>
+      <input id="keyword" type="text" placeholder="e.g. programming, coffee, pun" />
+      <label for="keywordCount">Number of jokes</label>
+      <input id="keywordCount" type="number" min="1" max="10" value="1" />
+      <div class="row">
+        <button id="keywordSyncBtn">Search (Sync)</button>
+        <button id="keywordAsyncBtn" class="secondary">Search (Async)</button>
+      </div>
+      <div id="keywordEndpoint" class="endpoint"></div>
+    </div>
+
+    <div id="status" class="status" hidden></div>
+    <div id="results" class="results"></div>
+  </div>
+
+  <script>
+    const API_BASE = "https://fastapi-ai-maker-joke-generator-production-d3f4.up.railway.app";
+
+    const randomCountInput = document.getElementById("randomCount");
+    const keywordInput = document.getElementById("keyword");
+    const keywordCountInput = document.getElementById("keywordCount");
+    const statusEl = document.getElementById("status");
+    const resultsEl = document.getElementById("results");
+    const randomEndpointEl = document.getElementById("randomEndpoint");
+    const keywordEndpointEl = document.getElementById("keywordEndpoint");
+
+    const buttons = [
+      document.getElementById("randomSyncBtn"),
+      document.getElementById("randomAsyncBtn"),
+      document.getElementById("keywordSyncBtn"),
+      document.getElementById("keywordAsyncBtn"),
+    ];
+
+    function setLoading(isLoading) {
+      buttons.forEach((button) => {
+        button.disabled = isLoading;
+      });
+    }
+
+    function showStatus(message, isError = false) {
+      statusEl.hidden = false;
+      statusEl.textContent = message;
+      statusEl.classList.toggle("error", isError);
+    }
+
+    function renderJokes(data) {
+      resultsEl.innerHTML = "";
+
+      if (!data.jokes || data.jokes.length === 0) {
+        showStatus("No jokes returned.", true);
+        return;
+      }
+
+      data.jokes.forEach((joke) => {
+        const card = document.createElement("article");
+        card.className = "joke";
+        card.innerHTML = `
+          <div class="joke-meta">
+            #${joke.id} · ${joke.category} · ${joke.date_added} · Rating ${joke.rating}/5
+          </div>
+          <div class="joke-text">${escapeHtml(joke.joke)}</div>
+        `;
+        resultsEl.appendChild(card);
+      });
+
+      showStatus(`Loaded ${data.count} joke${data.count === 1 ? "" : "s"}.`);
+    }
+
+    function escapeHtml(text) {
+      return text
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    async function fetchRandom(mode) {
+      const count = Number(randomCountInput.value) || 1;
+      const path = mode === "async" ? "/jokes/random/async" : "/jokes/random/sync";
+      const url = `${API_BASE}${path}?count=${count}`;
+      randomEndpointEl.textContent = `GET ${url}`;
+
+      setLoading(true);
+      showStatus("Loading random joke...");
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.detail || "Request failed");
+        }
+
+        renderJokes(data);
+      } catch (error) {
+        showStatus(error.message || "Could not load random joke.", true);
+        resultsEl.innerHTML = "";
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function searchKeyword(mode) {
+      const keyword = keywordInput.value.trim();
+      const count = Number(keywordCountInput.value) || 1;
+
+      if (!keyword) {
+        showStatus("Please enter a keyword.", true);
+        return;
+      }
+
+      const path = mode === "async" ? "/jokes/keyword/async" : "/jokes/keyword/sync";
+      const url = `${API_BASE}${path}`;
+      keywordEndpointEl.textContent = `POST ${url}`;
+
+      setLoading(true);
+      showStatus(`Searching for "${keyword}"...`);
+
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ keyword, count }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            typeof data.detail === "string" ? data.detail : "Request failed"
+          );
+        }
+
+        renderJokes(data);
+      } catch (error) {
+        showStatus(error.message || "Could not search jokes.", true);
+        resultsEl.innerHTML = "";
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    document.getElementById("randomSyncBtn").addEventListener("click", () => fetchRandom("sync"));
+    document.getElementById("randomAsyncBtn").addEventListener("click", () => fetchRandom("async"));
+    document.getElementById("keywordSyncBtn").addEventListener("click", () => searchKeyword("sync"));
+    document.getElementById("keywordAsyncBtn").addEventListener("click", () => searchKeyword("async"));
+
+    keywordInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        searchKeyword("sync");
+      }
+    });
+  </script>
+</body>
+</html>
