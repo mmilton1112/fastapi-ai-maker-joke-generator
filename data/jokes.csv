@@ -1,0 +1,21 @@
+id,joke,category,keywords,date_added,rating
+1,"Why do programmers prefer dark mode? Because light attracts bugs.",programming,"programming,bugs,dark mode",2026-01-15,5
+2,"I told my computer I needed a break. It said: No problem, I'll go to sleep.",technology,"computer,sleep,break",2026-01-18,4
+3,"Why did the scarecrow win an award? He was outstanding in his field.",puns,"scarecrow,field,pun",2026-02-01,4
+4,"Parallel lines have so much in common. It's a shame they'll never meet.",math,"math,geometry,parallel",2026-02-05,5
+5,"Why don't scientists trust atoms? Because they make up everything.",science,"science,atoms,chemistry",2026-02-10,5
+6,"I'm reading a book on anti-gravity. It's impossible to put down.",science,"science,physics,books",2026-02-12,4
+7,"Why did the coffee file a police report? It got mugged.",food,"coffee,food,pun",2026-02-14,3
+8,"What do you call a fake noodle? An impasta.",food,"food,pasta,pun",2026-02-18,4
+9,"Why was the math book sad? It had too many problems.",math,"math,books,school",2026-02-20,4
+10,"How do you organize a space party? You planet.",science,"space,planets,party",2026-03-01,5
+11,"Why do Java developers wear glasses? Because they don't C#.",programming,"programming,java,csharp",2026-03-05,5
+12,"A SQL query walks into a bar, walks up to two tables, and asks: Can I join you?",programming,"programming,sql,database",2026-03-08,5
+13,"Why did the bicycle fall over? Because it was two-tired.",puns,"bicycle,pun,transport",2026-03-10,3
+14,"What did the ocean say to the beach? Nothing, it just waved.",puns,"ocean,beach,pun",2026-03-12,4
+15,"I only know 25 letters of the alphabet. I don't know y.",wordplay,"alphabet,letters,pun",2026-03-15,4
+16,"Why don't eggs tell jokes? They'd crack each other up.",food,"eggs,food,pun",2026-03-18,4
+17,"What do you call a bear with no teeth? A gummy bear.",animals,"bear,animals,pun",2026-03-20,3
+18,"Why did the developer go broke? Because he used up all his cache.",programming,"programming,cache,money",2026-03-22,5
+19,"How does a penguin build its house? Igloos it together.",animals,"penguin,animals,winter",2026-03-25,4
+20,"Why did the golfer bring two pairs of pants? In case he got a hole in one.",sports,"golf,sports,pun",2026-03-28,4
